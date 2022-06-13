@@ -48,9 +48,62 @@
                     text: 'Multimedia'
                     icon: 'youtube'
 
-                    MDLabel:
-                        text: 'Python'
-                        halign: 'center'
+                    ScrollView:
+                        size_hint_y: 1
+    	                
+                        do_scroll_x: False
+                        do_scroll_y: True
+                        MDGridLayout:
+                            size:(root.width, root.height)
+    		                size_hint_x: None
+    		                size_hint_y: None
+                            cols: 1
+                            row_default_height: 100
+                            row_force_default: True
+                            
+                            MDSmartTile:
+                                radius: 24
+                                box_radius: [0, 0, 24, 24]
+                                box_color: 1, 1, 1, .2
+                                source: "prueba1.jpg"
+                                
+                                pos_hint: {'center_y': .5, 'center_x': .5}
+                                
+
+                                MDIconButton:
+                                    icon: "heart-outline"
+                                    theme_icon_color: "Custom"
+                                    icon_color: 1, 0, 0, 1
+                                    pos_hint: {"center_y": .5}
+                                    on_release: self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
+
+                                MDLabel:
+                                    text: "SIIIIIIIIIIIIIIIIIIIIIII"
+                                    bold: True
+                                    color: 1, 1, 1, 1
+
+                            
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
+                                md_bg: 'prueba1.jpg'
+
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
+
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
+
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
+
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
+
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
+
+                            MDRaisedButton:
+                                text: 'AAAAAAA'
 
 
     #Pantalla para la pregunta 1
@@ -518,7 +571,7 @@
                 
 
             Image: #acá se pone la imagen
-                source: 'TuConsejeroEmocional_imagenes/letsgo.png'
+                source: 'imagen.png'
                 # allow_stretch: True
 
             MDFillRoundFlatIconButton:

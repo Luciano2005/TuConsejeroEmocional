@@ -3,6 +3,9 @@ from kivy.lang import Builder
 from kivymd.app import MDApp    #Importamos a KivyMD
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager #Manejo de pantallas
+from kivy.uix.scrollview import ScrollView #Vista Scroll
+from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+from kivymd.uix.button import MDRectangleFlatButton
 
 Window.size = (350, 600) #Tamaño de pantalla
 
@@ -304,6 +307,11 @@ colors = { #Cambio de colores de tema predeterminados de kivyMD por los colores 
 
 class UI(ScreenManager): #Clase para manejar diferentes pantallas
     pass
+
+
+
+
+
 
 class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
     def build(self):    #Constructor
