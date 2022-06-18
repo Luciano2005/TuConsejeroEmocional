@@ -2,7 +2,7 @@ import random #Modulo para seleccionar las preguntas de forma aleatoria
 from kivy.lang import Builder
 from kivymd.app import MDApp    #Importamos a KivyMD
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition #Manejo de pantallas
+from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition, SwapTransition #Manejo de pantallas
 from kivy.uix.scrollview import ScrollView #Vista Scroll
 
 
@@ -19,6 +19,8 @@ puntaje_plazo = 0
 puntaje_sociales = 0
 puntaje_actividad = 0
 puntaje_generales = 0
+
+aparicion = 0
 
 #Funciones de asignación de puntos
 def puntos_emo(valor):  #Asignación de puntos para las preguntas emocionales
@@ -433,11 +435,30 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
 
     #----------------------------------Multimedia----------------------------------------------------------
 
-    def volver(self):
+    def volver(self): #Función para salir de las secciones hijas de multimedia
         ScreenManager.transition=FallOutTransition()
         self.root.current = 'principal'
         ScreenManager.transition=SlideTransition()
         # self.root.transition.direction = 'right'
+
+    def inicio_multi(self):
+        global aparicion
+        if aparicion == 0:
+            
+            self.root.current = 'mensaje_multi'
+            ScreenManager.transition=SwapTransition()
+            aparicion += 1
+        else: 
+            self.root.current = 'principal'
+        
+    def boton_multi(self):
+        ScreenManager.transition=SlideTransition()
+
+
+    #----------------------------------------------------------------------------------------------------
+    #                                          A Sufrir
+    #----------------------------------------------------------------------------------------------------
+            
         
 
 TuConsejeroEmocional().run() #Ejecuto la app

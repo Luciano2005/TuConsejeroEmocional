@@ -23,6 +23,8 @@
                     name: 'menu'
                     text: 'Menú'
                     icon: 'home'
+                    on_tab_press: root.transition.direction = 'right'
+                
                     
                     MDLabel:
                         text: 'Empezemos con un pequeño \ntest para poder guíarte y \nescucharte:'
@@ -48,6 +50,10 @@
                     name: 'multimedia'
                     text: 'Multimedia'
                     icon: 'youtube'
+                    on_tab_press: 
+                        app.inicio_multi()
+                        root.transition.direction = 'left'
+                        
 
                     ScrollView:
                         size_hint_y: 1
@@ -96,6 +102,8 @@
                                 background_down: 'TuConsejeroEmocional_imagenes/boton_emociones_down.png'
                                 halign: 'center'
                                 bold: True
+                                on_release: 
+                                    root.current = 'emociones'
 
                             Button:
                                 text: 'Habilidades sociales y\nrelaciones interpersonales'
@@ -104,6 +112,8 @@
                                 background_down: 'TuConsejeroEmocional_imagenes/boton_social_down.png'
                                 halign: 'center'
                                 bold: True
+                                on_release: 
+                                    root.current = 'social'
 
                             MDLabel:
                                 text: 'Otras categorías que podrían interesarte:'
@@ -118,6 +128,8 @@
                                 background_down: 'TuConsejeroEmocional_imagenes/boton_organizacion_down.png'
                                 halign: 'center'
                                 bold: True
+                                on_release: 
+                                    root.current = 'tiempo'
 
                             Button:
                                 text: 'Planeación de vida y\nvista al futuro'
@@ -126,8 +138,53 @@
                                 background_down: 'TuConsejeroEmocional_imagenes/boton_futuro_down.png'
                                 halign: 'center'
                                 bold: True
+                                on_release: 
+                                    root.current = 'futuro'
 
-                        
+
+
+    
+    
+        #Inicio multimedia
+    Screen:
+        name: 'mensaje_multi'
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 20
+            spacing: 50
+            MDLabel:
+                text:'Bienvenid@ a la sección Multimedia' 
+                # valign: 'top'
+                size_hint: (1, .3)
+                # pos_hint: {'center_x': .5}
+                bold: True
+                font_size: 24
+                halign: 'left'
+
+
+            MDLabel:
+                text: 'Aqui podrás encontrar material audiovisual y escrito que creemos que podría ayudarte...'
+                size_hint: (1, .1)
+                # pos_hint: {'center_y': .5}
+                font_size: 20
+                halign: 'center'
+
+
+            Image: #acá se pone la imagen
+                source: 'TuConsejeroEmocional_imagenes/inicio_multi.png'
+                # allow_stretch: True
+
+            MDFillRoundFlatIconButton:
+                icon: 'arrow-right-bold'
+                icon_color: utils.get_color_from_hex('#000000')
+                icon_size: 25
+                text: '¡Vamos Allá!'
+                md_bg_color: utils.get_color_from_hex('#FFFFFF')
+                text_color: utils.get_color_from_hex('#000000')
+                on_release: 
+                    root.current = 'principal'
+                    root.transition.direction = 'right'
+                    app.boton_multi()                 
 
                     
 
@@ -669,13 +726,268 @@
                     text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
                     font_size: 20
                     bold: True
+                    size_hint: (0.7, .4)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
+    
+    #Pantalla de Emociones
+    Screen:
+        name: 'emociones'
+        MDGridLayout:
+            cols: 1
+            rows: 2
+            MDTopAppBar:
+                title: 'TuConsejeroEmocional'
+                left_action_items: [['arrow-left', lambda x: app.volver()]]
+                md_bg_color: rgba(0,0,1,0)
+
+            ScrollView:
+                size_hint_y: 1
+    	                
+                do_scroll_x: False
+                do_scroll_y: True
+                MDGridLayout:
+                    cols: 1
+                    # orientation: 'vertical'
+                    size: (root.width, root.height)
+                    padding: 20,20, 20, 20
+                    spacing: 20
+
+    		        size_hint_x: None
+    		        size_hint_y: None
+                            
+                    height: self.minimum_height
+                    
+                
+                    MDLabel:
+                        text: 'Manejo de emociones e inteligencia emocional'
+                        size_hint: (1, .05)
+                        font_size: 24
+                        bold: True
+                        halign: 'center'
+                    MDLabel:
+                        text: 'Se podría decir que posees una buena inteligencia emocional, ¡felicitaciones!, pero igualmente debes continuar trabajando en ello, por lo que aquí te guiaremos a mejorar cada día más'
+                        font_size: 20
+                        size_hint: (1,.6)
+                        # haling: 'justify'
+
+                    MDLabel:
+                        text: 'Videos:'
+                        size_hint: (1,.05)
+                        font_size: 24
+                        bold: True
+                    MDRaisedButton:
+                        text: 'Tomate un\nmomento\npara relajarte con\nestos videos'
+                        font_size: 20
+                        bold: True
+                        size_hint: (0.7, .3)
+                        pos_hint: {'center_x': .5}
+                        haling: 'center'
+                        md_bg_color: 1,1,1,1
+                        text_color: 0,0,0,1
+                        
+                    MDLabel:
+                        text: 'Ejercicios:'
+                        size_hint: (1, .05)
+                        font_size: 24
+                        bold: True
+                    MDRaisedButton:
+                        text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
+                        font_size: 20
+                        bold: True
+                        size_hint: (0.7, .4)
+                        pos_hint: {'center_x': .5}
+                        haling: 'center'
+                        md_bg_color: 1,1,1,1
+                        text_color: 0,0,0,1
+                    MDRaisedButton:
+                        text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
+                        font_size: 20
+                        bold: True
+                        size_hint: (0.7, .4)
+                        pos_hint: {'center_x': .5}
+                        haling: 'center'
+                        md_bg_color: 1,1,1,1
+                        text_color: 0,0,0,1
+        
+    #Pantalla de Social
+    Screen:
+        name: 'social'
+        MDGridLayout:
+            cols: 1
+            rows: 2
+            MDTopAppBar:
+                title: 'TuConsejeroEmocional'
+                left_action_items: [['arrow-left', lambda x: app.volver()]]
+                md_bg_color: rgba(0,0,1,0)
+            BoxLayout:
+                orientation: 'vertical'
+                size: root.width, root.height
+                padding: 20,20, 20, 20
+                spacing: 20
+                
+            
+                MDLabel:
+                    text: 'Habilidades sociales y relaciones interpersonales:'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                    halign: 'center'
+                MDLabel:
+                    text: 'Podríamos decir que tus habiliades sociales son buenas, pero debes mantener ese buen trabajo y seguir mejorando, cosa con la que te ayudaremos aquí '
+                    font_size: 20
+                    size_hint: (1,.6)
+                    # haling: 'justify'
+
+                MDLabel:
+                    text: 'Videos:'
+                    size_hint: (1,.05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Tomate un\nmomento\npara relajarte con\nestos videos'
+                    font_size: 20
+                    bold: True
                     size_hint: (0.7, .3)
                     pos_hint: {'center_x': .5}
                     haling: 'center'
                     md_bg_color: 1,1,1,1
                     text_color: 0,0,0,1
-        
+                    
+                MDLabel:
+                    text: 'Ejercicios:'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .4)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
 
+    #Pantalla de tiempo
+    Screen:
+        name: 'tiempo'
+        MDGridLayout:
+            cols: 1
+            rows: 2
+            MDTopAppBar:
+                title: 'TuConsejeroEmocional'
+                left_action_items: [['arrow-left', lambda x: app.volver()]]
+                md_bg_color: rgba(0,0,1,0)
+            BoxLayout:
+                orientation: 'vertical'
+                size: root.width, root.height
+                padding: 20,20, 20, 20
+                spacing: 20
+                
+            
+                MDLabel:
+                    text: 'Implementación del tiempo y organización'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                    halign: 'center'
+                MDLabel:
+                    text: 'Excelente, según tus respuestas del test, eres una persona muy organizada, por lo que no necesitas mayor ayuda, solo en la tarea de continuar con los buenos hábitos'
+                    font_size: 20
+                    size_hint: (1,.6)
+                    # haling: 'justify'
+
+                MDLabel:
+                    text: 'Videos:'
+                    size_hint: (1,.05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Tomate un\nmomento\npara relajarte con\nestos videos'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .3)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
+                    
+                MDLabel:
+                    text: 'Ejercicios:'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .4)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
+
+    #Pantalla de Futuro
+    Screen:
+        name: 'futuro'
+        MDGridLayout:
+            cols: 1
+            rows: 2
+            MDTopAppBar:
+                title: 'TuConsejeroEmocional'
+                left_action_items: [['arrow-left', lambda x: app.volver()]]
+                md_bg_color: rgba(0,0,1,0)
+            BoxLayout:
+                orientation: 'vertical'
+                size: root.width, root.height
+                padding: 20,20, 20, 20
+                spacing: 20
+                
+            
+                MDLabel:
+                    text: 'Planeación de vida y vista al futuro'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                    halign: 'center'
+                MDLabel:
+                    text: 'Parece que tienes bien pensado lo que quieres para ti en un futuro, ¡asi que es hora de pasar a la acción y empezar a encaminar eso que quieres!'
+                    font_size: 20
+                    size_hint: (1,.6)
+                    # haling: 'justify'
+
+                MDLabel:
+                    text: 'Videos:'
+                    size_hint: (1,.05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Tomate un\nmomento\npara relajarte con\nestos videos'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .3)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
+                    
+                MDLabel:
+                    text: 'Ejercicios:'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .4)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
                     
 
 
