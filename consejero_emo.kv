@@ -1,5 +1,6 @@
 
 #:import utils kivy.utils
+#:import NoTransition kivy.uix.screenmanager.NoTransition
 
 <UI>:
     #Pantalla principal
@@ -8,7 +9,7 @@
         BoxLayout:
             orientation: 'vertical'
             
-            MDToolbar:
+            MDTopAppBar:
                 title: 'TuConsejeroEmocional'
                 
                 md_bg_color: rgba(0,0,1,0) #Cambiar color de fondo de la barra de navegación.
@@ -54,57 +55,81 @@
                         do_scroll_x: False
                         do_scroll_y: True
                         MDGridLayout:
+                            id: recursos
                             size:(root.width, root.height)
     		                size_hint_x: None
     		                size_hint_y: None
                             cols: 1
-                            row_default_height: 100
+                            padding: 30, 0, 30, 30
+                            spacing: 20
+                            
+                            row_default_height: 135
                             row_force_default: True
+                            height: self.minimum_height
                             
-                            MDSmartTile:
-                                radius: 24
-                                box_radius: [0, 0, 24, 24]
-                                box_color: 1, 1, 1, .2
-                                source: "prueba1.jpg"
+                            MDLabel:
+                                text: 'Te recomendamos darle un vistazo a las siguientes categorías:'  
+                                halign: 'center'
+                                font_size: 24      
+                                bold: True
+                                     
+
+
+                            Button:
+                                text: 'Meditación y\nrelajación general'
+                                font_size: 16
+                                background_normal: 'TuConsejeroEmocional_imagenes/boton_meditacion.png'
+                                background_down: 'TuConsejeroEmocional_imagenes/boton_meditacion_down.png'
+                                halign: 'center'
+                                bold: True
+                                on_release: 
+                                    root.current = 'meditacion'
+                                    # root.transition = 'left'
                                 
-                                pos_hint: {'center_y': .5, 'center_x': .5}
-                                
 
-                                MDIconButton:
-                                    icon: "heart-outline"
-                                    theme_icon_color: "Custom"
-                                    icon_color: 1, 0, 0, 1
-                                    pos_hint: {"center_y": .5}
-                                    on_release: self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
-
-                                MDLabel:
-                                    text: "SIIIIIIIIIIIIIIIIIIIIIII"
-                                    bold: True
-                                    color: 1, 1, 1, 1
-
+                    
                             
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
-                                md_bg: 'prueba1.jpg'
+                            Button:
+                                text: 'Manejo de emociones e\ninteligencia emocional'
+                                font_size: 16
+                                background_normal: 'TuConsejeroEmocional_imagenes/boton_emociones.png'
+                                background_down: 'TuConsejeroEmocional_imagenes/boton_emociones_down.png'
+                                halign: 'center'
+                                bold: True
 
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
+                            Button:
+                                text: 'Habilidades sociales y\nrelaciones interpersonales'
+                                font_size: 16
+                                background_normal: 'TuConsejeroEmocional_imagenes/boton_social.png'
+                                background_down: 'TuConsejeroEmocional_imagenes/boton_social_down.png'
+                                halign: 'center'
+                                bold: True
 
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
+                            MDLabel:
+                                text: 'Otras categorías que podrían interesarte:'
+                                halign: 'center'
+                                font_size: 24
+                                bold: True
 
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
+                            Button:
+                                text: 'Implementación del tiempo y\n organización'
+                                font_size: 16
+                                background_normal: 'TuConsejeroEmocional_imagenes/boton_organizacion.png'
+                                background_down: 'TuConsejeroEmocional_imagenes/boton_organizacion_down.png'
+                                halign: 'center'
+                                bold: True
 
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
+                            Button:
+                                text: 'Planeación de vida y\nvista al futuro'
+                                font_size: 16
+                                background_normal: 'TuConsejeroEmocional_imagenes/boton_futuro.png'
+                                background_down: 'TuConsejeroEmocional_imagenes/boton_futuro_down.png'
+                                halign: 'center'
+                                bold: True
 
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
+                        
 
-                            MDRaisedButton:
-                                text: 'AAAAAAA'
-
+                    
 
     #Pantalla para la pregunta 1
     Screen:
@@ -571,7 +596,7 @@
                 
 
             Image: #acá se pone la imagen
-                source: 'imagen.png'
+                source: 'TuConsejeroEmocional_imagenes/letsgo.png'
                 # allow_stretch: True
 
             MDFillRoundFlatIconButton:
@@ -584,6 +609,77 @@
                 on_release: 
                     root.current = 'principal'
                     root.transition.direction = 'left'
+
+
+
+
+
+    #----------------------------------- Opciones multimedia ---------------------------------------
+
+    #Pantalla de Meditación
+    Screen:
+        name: 'meditacion'
+        MDGridLayout:
+            cols: 1
+            rows: 2
+            MDTopAppBar:
+                title: 'TuConsejeroEmocional'
+                left_action_items: [['arrow-left', lambda x: app.volver()]]
+                md_bg_color: rgba(0,0,1,0)
+            BoxLayout:
+                orientation: 'vertical'
+                size: root.width, root.height
+                padding: 20,20, 20, 20
+                spacing: 20
+                
+            
+                MDLabel:
+                    text: 'Meditación y relajación general'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                    halign: 'center'
+                MDLabel:
+                    text: 'Según tus resultados en el test, esta semana no ha sido muy dura para ti, sin embargo, ¡te recomendamos ver el material selecionado para que tengas un momento de relajación!'
+                    font_size: 20
+                    size_hint: (1,.6)
+                    # haling: 'justify'
+
+                MDLabel:
+                    text: 'Videos:'
+                    size_hint: (1,.05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Tomate un\nmomento\npara relajarte con\nestos videos'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .3)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
+                    
+                MDLabel:
+                    text: 'Ejercicios:'
+                    size_hint: (1, .05)
+                    font_size: 24
+                    bold: True
+                MDRaisedButton:
+                    text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
+                    font_size: 20
+                    bold: True
+                    size_hint: (0.7, .3)
+                    pos_hint: {'center_x': .5}
+                    haling: 'center'
+                    md_bg_color: 1,1,1,1
+                    text_color: 0,0,0,1
+        
+
+                    
+
+
+
 
 
 

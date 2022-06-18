@@ -2,10 +2,10 @@ import random #Modulo para seleccionar las preguntas de forma aleatoria
 from kivy.lang import Builder
 from kivymd.app import MDApp    #Importamos a KivyMD
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager #Manejo de pantallas
+from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition #Manejo de pantallas
 from kivy.uix.scrollview import ScrollView #Vista Scroll
-from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
-from kivymd.uix.button import MDRectangleFlatButton
+
+
 
 Window.size = (350, 600) #Tamaño de pantalla
 
@@ -299,7 +299,7 @@ colors = { #Cambio de colores de tema predeterminados de kivyMD por los colores 
     "Dark": {
         "StatusBar": "000000",
         "AppBar": "212121",
-        "Background": "232827", #Se ca,bió el negro por un gris oscuro
+        "Background": "232827", #Se cambió el negro por un gris oscuro
         "CardsDialogs": "424242",
         "FlatButtonDown": "999999",
     }
@@ -308,10 +308,7 @@ colors = { #Cambio de colores de tema predeterminados de kivyMD por los colores 
 class UI(ScreenManager): #Clase para manejar diferentes pantallas
     pass
 
-
-
-
-
+# --------------------------------------------------APP-----------------------------------------------------
 
 class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
     def build(self):    #Constructor
@@ -321,6 +318,9 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
         Builder.load_file('consejero_emo.kv') #Conexión con el archivo de interfaz .kv
         return UI() 
     
+    
+    #--------------------------Mostrar preguntas y respuestas en pantalla-------------------------------------------
+        
     def preguntas_definicion(self): #Función que pone las preguntas y respuestas antes definidas
         asigna_pregunta = 0
         contador_tipo = 0
@@ -406,15 +406,11 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
                             self.root.ids.respuesta5_5.text = k
                         posicion += 1  
 
-                #Lo siguiente es para la obtención de la respuesta (se mirara en el futuro):
-                
-                # respuesta_usuario = input()         #Entrada de respuesta del usuario (Debe ser exactamente igual a alguna de las opciones mostradas, este codigo es de prueba para mostrar que funciona, en kivy esto funcionará de manera diferente)
-                # llamado_puntos(j, respuesta_usuario) #Llamo a la función para que descifre qué tipo de pregunta estamos respondiendo y qué tipo de respuesta debe pasa.
-
-            
             asigna_pregunta +=1 #Sumo 1 a la variable para imprimir las siguientes preguntas y respuestas. 
             posicion = 0 #Reinicio la variable para volver a imprimir las y respuestas del siguiente tipo de pregunta
-        
+
+
+    #-------------------------------Enviar resultados de encuesta----------------------------------------------
 
     def enviar_resultado(self, instance, value, pregunta, respuesta): #Método para asignar puntajes o quitarlos cuando se deseleccionan
         if value == True:
@@ -425,10 +421,23 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
         #Prueba para verificar que el valor de las preguntas cuando son elegidas o cuando no hay ninguna seleccionada
         print(f'emocional: {puntaje_emo}\nplazo: {puntaje_plazo}\nsocial: {puntaje_sociales}\nactividad: {puntaje_actividad}\ngeneral: {puntaje_generales}', end= "\n\n\n")
 
+
+    #---------------------------------------Finalizar encuesta---------------------------------------
+    
     def finalizar(self): #Restricción para que el usuario solo finalice el test cuando responda todas las preguntas
         if 0 is puntaje_emo or 0 is puntaje_plazo or 0 is puntaje_sociales or 0 is puntaje_actividad or 0 is puntaje_generales:
             print('Le falto responder una pregunta')
         else:
             self.root.current = 'finalizar'
+
+
+    #----------------------------------Multimedia----------------------------------------------------------
+
+    def volver(self):
+        ScreenManager.transition=FallOutTransition()
+        self.root.current = 'principal'
+        ScreenManager.transition=SlideTransition()
+        # self.root.transition.direction = 'right'
+        
 
 TuConsejeroEmocional().run() #Ejecuto la app
