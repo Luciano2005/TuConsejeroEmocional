@@ -23,6 +23,7 @@
                     name: 'menu'
                     text: 'Menú'
                     icon: 'home'
+                    id: GG
                     on_tab_press: root.transition.direction = 'right'
                 
                     
@@ -43,16 +44,22 @@
                         pos_hint: {'center_x': .5, 'center_y': .5}
                         size_hint: (.4, .2)
                         on_release: root.current = 'pregunta1'
-                        on_press: app.preguntas_definicion()
+                        on_press: 
+                            root.transition.direction = 'left'
+                            app.preguntas_definicion()
+                            
 
 
                 MDBottomNavigationItem:
                     name: 'multimedia'
                     text: 'Multimedia'
                     icon: 'youtube'
+                    id: multi
+                    disabled: True
                     on_tab_press: 
-                        app.inicio_multi()
+                        app.inicio_multi(multi.disabled)
                         root.transition.direction = 'left'
+                    
                         
 
                     ScrollView:
@@ -143,9 +150,15 @@
 
 
 
+    Screen:
+        name: 'bloqueo'
+        MDLabel:
+            text: 'Responda esa vaina primero'
+        MDRaisedButton:
+            text: 'Volver'
+            on_release: root.current = 'principal'
     
-    
-        #Inicio multimedia
+        #Inicio multimedia----------------------------------------------------------
     Screen:
         name: 'mensaje_multi'
         BoxLayout:
@@ -188,7 +201,7 @@
 
                     
 
-    #Pantalla para la pregunta 1
+    #Pantalla para la pregunta 1------------------------------------------------
     Screen:
         name: 'pregunta1'
         BoxLayout:
@@ -266,7 +279,7 @@
                     root.transition.direction = 'left'
 
 
-    #pantalla para la pregunta 2     
+    #pantalla para la pregunta 2----------------------------------------------------------------
     Screen:
         name: 'pregunta2'
         BoxLayout:
@@ -358,7 +371,7 @@
 
                 
 
-    #Pantalla para la pregunta 3
+    #Pantalla para la pregunta 3---------------------------------------------------------------
     Screen:
         name: 'pregunta3'
         BoxLayout:
@@ -448,7 +461,7 @@
                 
 
 
-    #Pantalla para la pregunta 4
+    #Pantalla para la pregunta 4---------------------------------------------------------------------------
     Screen:
         name: 'pregunta4'
         BoxLayout:
@@ -537,7 +550,7 @@
 
                 
 
-    #Pantalla para la pregunta 5
+    #Pantalla para la pregunta 5---------------------------------------------------------------------------
     Screen:
         name: 'pregunta5'
         BoxLayout:
@@ -627,7 +640,7 @@
                 
                 
 
-    #Pantalla finalizar
+    #Pantalla finalizar-----------------------------------------------------------------------------
     Screen:
         name: 'finalizar'
         BoxLayout:
@@ -673,7 +686,7 @@
 
     #----------------------------------- Opciones multimedia ---------------------------------------
 
-    #Pantalla de Meditación
+    #Pantalla de Meditación-------------------------------------------------------------------------
     Screen:
         name: 'meditacion'
         MDGridLayout:
@@ -732,7 +745,7 @@
                     md_bg_color: 1,1,1,1
                     text_color: 0,0,0,1
     
-    #Pantalla de Emociones
+    #Pantalla de Emociones----------------------------------------------------------------------
     Screen:
         name: 'emociones'
         MDGridLayout:
@@ -750,69 +763,84 @@
                 do_scroll_y: True
                 MDGridLayout:
                     cols: 1
+                    
                     # orientation: 'vertical'
                     size: (root.width, root.height)
-                    padding: 20,20, 20, 20
-                    spacing: 20
+                    padding: 20,20, 20, 40
+                    spacing: 0
+                    row_default_height: 800
+                    row_force_default: True
 
     		        size_hint_x: None
     		        size_hint_y: None
                             
                     height: self.minimum_height
                     
-                
-                    MDLabel:
-                        text: 'Manejo de emociones e inteligencia emocional'
-                        size_hint: (1, .05)
-                        font_size: 24
-                        bold: True
-                        halign: 'center'
-                    MDLabel:
-                        text: 'Se podría decir que posees una buena inteligencia emocional, ¡felicitaciones!, pero igualmente debes continuar trabajando en ello, por lo que aquí te guiaremos a mejorar cada día más'
-                        font_size: 20
-                        size_hint: (1,.6)
-                        # haling: 'justify'
 
-                    MDLabel:
-                        text: 'Videos:'
-                        size_hint: (1,.05)
-                        font_size: 24
-                        bold: True
-                    MDRaisedButton:
-                        text: 'Tomate un\nmomento\npara relajarte con\nestos videos'
-                        font_size: 20
-                        bold: True
-                        size_hint: (0.7, .3)
-                        pos_hint: {'center_x': .5}
-                        haling: 'center'
-                        md_bg_color: 1,1,1,1
-                        text_color: 0,0,0,1
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: 20  
+
+                    
+                        MDLabel:
+                            text: 'Manejo de emociones e inteligencia emocional'
+                            size_hint: (1, .3)
+                            font_size: 24
+                            bold: True
+                            halign: 'center'
+                
+                        MDLabel:
+                            text: 'Puede que estes pasando un momento dificl, o que no sepas bien como manejar tus emociones y reacciones, por lo que aquí tienes material de ayuda que puede llegar a serte útil'
+                            font_size: 20
+                            size_hint: (1,.7)
+                            # haling: 'justify'
+
+                    
+                      
+                        MDLabel:
+                            text: 'Videos:'
+                            size_hint: (1,.05)
+                            font_size: 24
+                            bold: True
+                                            
                         
-                    MDLabel:
-                        text: 'Ejercicios:'
-                        size_hint: (1, .05)
-                        font_size: 24
-                        bold: True
-                    MDRaisedButton:
-                        text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
-                        font_size: 20
-                        bold: True
-                        size_hint: (0.7, .4)
-                        pos_hint: {'center_x': .5}
-                        haling: 'center'
-                        md_bg_color: 1,1,1,1
-                        text_color: 0,0,0,1
-                    MDRaisedButton:
-                        text: 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
-                        font_size: 20
-                        bold: True
-                        size_hint: (0.7, .4)
-                        pos_hint: {'center_x': .5}
-                        haling: 'center'
-                        md_bg_color: 1,1,1,1
-                        text_color: 0,0,0,1
+                        MDRaisedButton:
+                            text: 'Identifica tus\nsentimientos y\nproblemas con\nestos videos'
+                            font_size: 20
+                            bold: True
+                            size_hint: (.7, .5)
+                            pos_hint: {'center_x': .5}
+                            haling: 'center'
+                            md_bg_color: 1,1,1,1
+                            text_color: 0,0,0,1
+                
+                        MDLabel:
+                            text: 'Artículos y ejercicios:'
+                            size_hint: (1, .05)
+                            font_size: 24
+                            bold: True
+    
+                        MDRaisedButton:
+                            text: 'Informate de los\ndiagnosticos e\ninformación de\nprofesionales'
+                            font_size: 20
+                            bold: True
+                            size_hint: (.7, .5)
+                            pos_hint: {'center_x': .5}
+                            haling: 'center'
+                            md_bg_color: 1,1,1,1
+                            text_color: 0,0,0,1
+                       
+                        MDLabel:
+                            text: 'Si sientes o identificas que tienes algún problema serio o de rápido tratamiento, consulta las líneas de ayuda de la universidad [ref=aqui][b]aquí[/b][/ref]'
+                            markup: True    
+                            font_size: 20
+                            size_hint: (1, .4)
+                            pos_hint: {'center_x': .5}
+                            haling: 'center'
+                            on_ref_press: app.unal()
+                        
         
-    #Pantalla de Social
+    #Pantalla de Social--------------------------------------------------------------------------------
     Screen:
         name: 'social'
         MDGridLayout:
@@ -871,7 +899,7 @@
                     md_bg_color: 1,1,1,1
                     text_color: 0,0,0,1
 
-    #Pantalla de tiempo
+    #Pantalla de tiempo------------------------------------------------------------------------------
     Screen:
         name: 'tiempo'
         MDGridLayout:
@@ -930,7 +958,7 @@
                     md_bg_color: 1,1,1,1
                     text_color: 0,0,0,1
 
-    #Pantalla de Futuro
+    #Pantalla de Futuro-------------------------------------------------------------------------------
     Screen:
         name: 'futuro'
         MDGridLayout:

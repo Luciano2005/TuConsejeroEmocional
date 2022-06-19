@@ -1,13 +1,15 @@
+import webbrowser
 import random #Modulo para seleccionar las preguntas de forma aleatoria
 from kivy.lang import Builder
 from kivymd.app import MDApp    #Importamos a KivyMD
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition, SwapTransition #Manejo de pantallas
+from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition, SwapTransition #Manejo de pantallas y transiciones
 from kivy.uix.scrollview import ScrollView #Vista Scroll
 
 
 
-Window.size = (350, 600) #Tamaño de pantalla
+
+Window.size = (300, 600) #Tamaño de pantalla
 
 #--------------------------------------------------------------------------------
 #                       Algoritmo de las preguntas
@@ -431,6 +433,7 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
             print('Le falto responder una pregunta')
         else:
             self.root.current = 'finalizar'
+            return True
 
 
     #----------------------------------Multimedia----------------------------------------------------------
@@ -441,24 +444,35 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
         ScreenManager.transition=SlideTransition()
         # self.root.transition.direction = 'right'
 
-    def inicio_multi(self):
+    def inicio_multi(self, valor): #Función para que el mensaje de bienvenida de multimedia solo aparezca una vez.
         global aparicion
-        if aparicion == 0:
+        print(valor)
+        if valor == True:
+            self.root.current = 'principal'
+            self.root.ids.multi.disabled = True
+            self.root.ids.GG.disabled = False
+
+        if self.finalizar() == True:
+            self.root.ids.multi.disabled = False
+        if aparicion == 0 and valor == False and self.finalizar() == True:
             
             self.root.current = 'mensaje_multi'
             ScreenManager.transition=SwapTransition()
             aparicion += 1
-        else: 
+        elif aparicion > 0: 
             self.root.current = 'principal'
+
+    
         
-    def boton_multi(self):
+    def boton_multi(self): #Calibración de las transiciones (Se estaba bugueando XD)
         ScreenManager.transition=SlideTransition()
 
 
     #----------------------------------------------------------------------------------------------------
     #                                          A Sufrir
     #----------------------------------------------------------------------------------------------------
-            
+    def unal(self):
+        webbrowser.open('https://www.humanas.unal.edu.co/2017/extension/servicio-de-atencion-psicologica/servicios')
         
 
 TuConsejeroEmocional().run() #Ejecuto la app
