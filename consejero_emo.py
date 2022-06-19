@@ -5,6 +5,7 @@ from kivymd.app import MDApp    #Importamos a KivyMD
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition, SwapTransition #Manejo de pantallas y transiciones
 from kivy.uix.scrollview import ScrollView #Vista Scroll
+from kivymd.uix.gridlayout import MDGridLayout
 
 
 
@@ -428,12 +429,16 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
 
     #---------------------------------------Finalizar encuesta---------------------------------------
     
-    def finalizar(self): #Restricción para que el usuario solo finalice el test cuando responda todas las preguntas
+    def finalizar(self, mensaje): #Restricción para que el usuario solo finalice el test cuando responda todas las preguntas
         if 0 is puntaje_emo or 0 is puntaje_plazo or 0 is puntaje_sociales or 0 is puntaje_actividad or 0 is puntaje_generales:
-            print('Le falto responder una pregunta')
+            # print('Le falto responder una pregunta')
+            return False
         else:
-            self.root.current = 'finalizar'
-            return True
+            if mensaje == 'bloqueo':
+                return True
+            else:
+                self.root.current = 'finalizar'
+                return True
 
 
     #----------------------------------Multimedia----------------------------------------------------------
@@ -448,17 +453,70 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
         global aparicion
         print(valor)
         if valor == True:
-            self.root.current = 'principal'
             self.root.ids.multi.disabled = True
-            self.root.ids.GG.disabled = False
 
-        if self.finalizar() == True:
+        if self.finalizar('bloqueo') == True:
             self.root.ids.multi.disabled = False
-        if aparicion == 0 and valor == False and self.finalizar() == True:
+            valor = False
+        if aparicion == 0 and valor == False and self.finalizar('bloqueo') == True:
             
             self.root.current = 'mensaje_multi'
             ScreenManager.transition=SwapTransition()
             aparicion += 1
+            self.root.ids.kk.remove_widget(MDGridLayout)
+            KV = """
+Screen:
+    name: 'futuro'
+    MDGridLayout:
+        cols: 1
+        rows: 2
+        MDTopAppBar:
+            title: 'TuConsejeroEmocional'
+            left_action_items: [['arrow-left', lambda x: app.volver()]]
+            md_bg_color: rgba(0,0,1,0)
+        BoxLayout:
+            orientation: 'vertical'
+            size: root.width, root.height
+            padding: 20,20, 20, 20
+            spacing: 20
+            
+        
+            MDLabel:
+                text: 'Planeación de vida y vista al futuro'
+                size_hint: (1, .05)
+                font_size: 24
+                bold: True
+                halign: 'center'
+            MDLabel:
+                text: 'Parece que tienes bien pensado lo que quieres para ti en un futuro, ¡asi que es hora de pasar a la acción y empezar a encaminar eso que quieres!'
+                font_size: 20
+                size_hint: (1,.6)
+                # haling: 'justify'
+
+            MDLabel:
+                text: 'Videos:'
+                size_hint: (1,.05)
+                font_size: 24
+                bold: True
+            
+                
+            MDLabel:
+                text: 'Ejercicios:'
+                size_hint: (1, .05)
+                font_size: 24
+                bold: True
+            MDRaisedButton:
+                text: 'Mira más tecnicas y ejercicios de relajación aquí'
+                font_size: 20
+                bold: True
+                size_hint: (0.7, .4)
+                pos_hint: {'center_x': .5}
+                haling: 'center'
+                md_bg_color: 1,1,1,1
+                text_color: 0,0,0,1
+            
+            """
+            return Builder.load_string(KV)
         elif aparicion > 0: 
             self.root.current = 'principal'
 

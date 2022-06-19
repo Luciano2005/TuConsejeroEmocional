@@ -139,6 +139,7 @@
                                     root.current = 'tiempo'
 
                             Button:
+                                id: planeacion
                                 text: 'Planeación de vida y\nvista al futuro'
                                 font_size: 16
                                 background_normal: 'TuConsejeroEmocional_imagenes/boton_futuro.png'
@@ -635,7 +636,7 @@
                     md_bg_color: utils.get_color_from_hex('#FFFFFF')
                     text_color: utils.get_color_from_hex('#000000')
                     on_release: 
-                        app.finalizar()
+                        app.finalizar('desbloqueo')
                         root.transition.direction = 'left'
                 
                 
@@ -962,6 +963,7 @@
     Screen:
         name: 'futuro'
         MDGridLayout:
+            id: kk
             cols: 1
             rows: 2
             MDTopAppBar:
