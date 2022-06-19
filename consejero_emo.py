@@ -6,6 +6,7 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransition, SwapTransition #Manejo de pantallas y transiciones
 from kivy.uix.scrollview import ScrollView #Vista Scroll
 from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.label import MDLabel
 
 
 
@@ -463,63 +464,11 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
             self.root.current = 'mensaje_multi'
             ScreenManager.transition=SwapTransition()
             aparicion += 1
-            self.root.ids.kk.remove_widget(MDGridLayout)
-            KV = """
-Screen:
-    name: 'futuro'
-    MDGridLayout:
-        cols: 1
-        rows: 2
-        MDTopAppBar:
-            title: 'TuConsejeroEmocional'
-            left_action_items: [['arrow-left', lambda x: app.volver()]]
-            md_bg_color: rgba(0,0,1,0)
-        BoxLayout:
-            orientation: 'vertical'
-            size: root.width, root.height
-            padding: 20,20, 20, 20
-            spacing: 20
-            
-        
-            MDLabel:
-                text: 'Planeación de vida y vista al futuro'
-                size_hint: (1, .05)
-                font_size: 24
-                bold: True
-                halign: 'center'
-            MDLabel:
-                text: 'Parece que tienes bien pensado lo que quieres para ti en un futuro, ¡asi que es hora de pasar a la acción y empezar a encaminar eso que quieres!'
-                font_size: 20
-                size_hint: (1,.6)
-                # haling: 'justify'
 
-            MDLabel:
-                text: 'Videos:'
-                size_hint: (1,.05)
-                font_size: 24
-                bold: True
-            
-                
-            MDLabel:
-                text: 'Ejercicios:'
-                size_hint: (1, .05)
-                font_size: 24
-                bold: True
-            MDRaisedButton:
-                text: 'Mira más tecnicas y ejercicios de relajación aquí'
-                font_size: 20
-                bold: True
-                size_hint: (0.7, .4)
-                pos_hint: {'center_x': .5}
-                haling: 'center'
-                md_bg_color: 1,1,1,1
-                text_color: 0,0,0,1
-            
-            """
-            return Builder.load_string(KV)
         elif aparicion > 0: 
             self.root.current = 'principal'
 
+        
     
         
     def boton_multi(self): #Calibración de las transiciones (Se estaba bugueando XD)
@@ -532,5 +481,49 @@ Screen:
     def unal(self):
         webbrowser.open('https://www.humanas.unal.edu.co/2017/extension/servicio-de-atencion-psicologica/servicios')
         
+
+    #----------Funciones de personalización de interfazces------------------------------------
+
+    def personalizacion_contenido(self):
+        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales
+
+        # self.root.ids.puntaje_medio_emo.remove_widget(self.root.ids.puntaje_medio_emo.children[0])
+        # self.root.ids.articulos_emo.text = 'Dale un vistazo a\nestas lecturas y\nejercicios para\ncomprender y\nmanejar tus\nemociones '
+        # self.root.ids.videos_emo.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
+        
+        if puntaje_emo == 10:
+            return #interfaz correspondiente
+        elif puntaje_emo == 8 or puntaje_emo == 6:
+            return #interfaz correspondiente
+        elif puntaje_emo <=4:
+            return #interfaz correspondiente
+        
+        if puntaje_actividad == 10:
+            return #interfaz correspondiente
+        elif puntaje_actividad == 8 or puntaje_actividad == 6:
+            return #interfaz correspondiente
+        elif puntaje_actividad <=4:
+            return #interfaz correspondiente
+        
+        if puntaje_generales == 10:
+            return #interfaz correspondiente
+        elif puntaje_generales == 8 or puntaje_generales == 6:
+            return #interfaz correspondiente
+        elif puntaje_generales <=4:
+            return #interfaz correspondiente
+        
+        if puntaje_plazo == 10:
+            return #interfaz correspondiente
+        elif puntaje_plazo == 8 or puntaje_plazo == 6:
+            return #interfaz correspondiente
+        elif puntaje_plazo <=4:
+            return #interfaz correspondiente
+        
+        if puntaje_sociales == 10:
+            return #interfaz correspondiente
+        elif puntaje_sociales == 8 or puntaje_sociales == 6:
+            return #interfaz correspondiente
+        elif puntaje_sociales <=4:
+            return #interfaz correspondiente
 
 TuConsejeroEmocional().run() #Ejecuto la app
