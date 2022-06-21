@@ -7,11 +7,19 @@ from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransi
 from kivy.uix.scrollview import ScrollView #Vista Scroll
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
+#------------------------------------Cosas de webview---------------------------------------------------------
+from kivy.uix.modalview import ModalView
+from kivy.clock import Clock
+from android.runnable import run_on_ui_thread
+from jnius import autoclass, cast, PythonJavaClass, java_method
+from webview import WebView
+from kivy.uix.widget import Widget
+from kivymd.uix.screen import MDScreen
 
 
 
 
-Window.size = (300, 600) #Tamaño de pantalla
+#Window.size = (300, 600) #Tamaño de pantalla
 
 #--------------------------------------------------------------------------------
 #                       Algoritmo de las preguntas
@@ -241,6 +249,145 @@ preguntas = [[[random.choice(list(preguntas_emocionales.values()))], list(respue
             [[random.choice(list(Preguntas_Generales.values()))], list(Respuestas_Generales.values())]]
 
 
+#-----------------------------------------------------------------------------------------------------
+#                                   Codigo pjnius para el webview
+#-----------------------------------------------------------------------------------------------------
+
+WebViewA = autoclass('android.webkit.WebView')
+WebViewClient = autoclass('android.webkit.WebViewClient')
+LayoutParams = autoclass('android.view.ViewGroup$LayoutParams')
+LinearLayout = autoclass('android.widget.LinearLayout')
+KeyEvent = autoclass('android.view.KeyEvent')
+ViewGroup = autoclass('android.view.ViewGroup')
+DownloadManager = autoclass('android.app.DownloadManager')
+DownloadManagerRequest = autoclass('android.app.DownloadManager$Request')
+Uri = autoclass('android.net.Uri')
+Environment = autoclass('android.os.Environment')
+Context = autoclass('android.content.Context')
+PythonActivity = autoclass('org.kivy.android.PythonActivity')
+
+
+class DownloadListener(PythonJavaClass):
+    #https://stackoverflow.com/questions/10069050/download-file-inside-webview
+    __javacontext__ = 'app'
+    __javainterfaces__ = ['android/webkit/DownloadListener']
+
+    @java_method('(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V')
+    def onDownloadStart(self, url, userAgent, contentDisposition, mimetype,
+                        contentLength):
+        mActivity = PythonActivity.mActivity 
+        context =  mActivity.getApplicationContext()
+        visibility = DownloadManagerRequest.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+        dir_type = Environment.DIRECTORY_DOWNLOADS
+        uri = Uri.parse(url)
+        filepath = uri.getLastPathSegment()
+        request = DownloadManagerRequest(uri)
+        request.setNotificationVisibility(visibility)
+        request.setDestinationInExternalFilesDir(context,dir_type, filepath)
+        dm = cast(DownloadManager,
+                  mActivity.getSystemService(Context.DOWNLOAD_SERVICE))
+        dm.enqueue(request)
+
+
+class KeyListener(PythonJavaClass):
+    __javacontext__ = 'app'
+    __javainterfaces__ = ['android/view/View$OnKeyListener']
+
+    def __init__(self, listener):
+        super().__init__()
+        self.listener = listener
+
+    @java_method('(Landroid/view/View;ILandroid/view/KeyEvent;)Z')
+    def onKey(self, v, key_code, event):
+        if event.getAction() == KeyEvent.ACTION_DOWN and\
+           key_code == KeyEvent.KEYCODE_BACK: 
+            return self.listener()
+        
+class WebView(ModalView):
+    # https://developer.android.com/reference/android/webkit/WebView
+    
+    def __init__(self, url, enable_javascript = False, enable_downloads = False,
+                 enable_zoom = False, **kwargs):
+        super().__init__(**kwargs)
+        self.url = url
+        self.enable_javascript = enable_javascript
+        self.enable_downloads = enable_downloads
+        self.enable_zoom = enable_zoom
+        self.webview = None
+        self.enable_dismiss = True
+        self.open()
+
+    @run_on_ui_thread        
+    def on_open(self):
+        mActivity = PythonActivity.mActivity 
+        webview = WebViewA(mActivity)
+        webview.setWebViewClient(WebViewClient())
+        webview.getSettings().setJavaScriptEnabled(self.enable_javascript)
+        webview.getSettings().setBuiltInZoomControls(self.enable_zoom)
+        webview.getSettings().setDisplayZoomControls(False)
+        webview.getSettings().setAllowFileAccess(True) #default False api>29
+        layout = LinearLayout(mActivity)
+        layout.setOrientation(LinearLayout.VERTICAL)
+        layout.addView(webview, self.width, self.height)
+        mActivity.addContentView(layout, LayoutParams(-1, -1))
+        webview.setOnKeyListener(KeyListener(self._back_pressed))
+        if self.enable_downloads:
+            webview.setDownloadListener(DownloadListener())
+        self.webview = webview
+        self.layout = layout
+        try:
+            webview.loadUrl(self.url)
+        except Exception as e:            
+            print('Webview.on_open(): ' + str(e))
+            self.dismiss()  
+        
+    @run_on_ui_thread        
+    def on_dismiss(self):
+        if self.enable_dismiss:
+            self.enable_dismiss = False
+            parent = cast(ViewGroup, self.layout.getParent())
+            if parent is not None: parent.removeView(self.layout)
+            self.webview.clearHistory()
+            self.webview.clearCache(True)
+            self.webview.clearFormData()
+            self.webview.destroy()
+            self.layout = None
+            self.webview = None
+        
+    @run_on_ui_thread
+    def on_size(self, instance, size):
+        if self.webview:
+            params = self.webview.getLayoutParams()
+            params.width = self.width
+            params.height = self.height
+            self.webview.setLayoutParams(params)
+
+    def pause(self):
+        if self.webview:
+            self.webview.pauseTimers()
+            self.webview.onPause()
+
+    def resume(self):
+        if self.webview:
+            self.webview.onResume()       
+            self.webview.resumeTimers()
+
+    def downloads_directory(self):
+        # e.g. Android/data/org.test.myapp/files/Download
+        dir_type = Environment.DIRECTORY_DOWNLOADS
+        context =  PythonActivity.mActivity.getApplicationContext()
+        directory = context.getExternalFilesDir(dir_type)
+        return str(directory.getPath())
+
+    def _back_pressed(self):
+        if self.webview.canGoBack():
+            self.webview.goBack()
+        else:
+            self.dismiss()  
+        return True
+
+
+
 
 #---------------------------------------------------------------------------------
 #                       CODIGO KIVY-PYTHON (Clases y métodos)
@@ -311,6 +458,11 @@ colors = { #Cambio de colores de tema predeterminados de kivyMD por los colores 
     }
 }
 
+#---------------------------------------------Parte de Webview-------------------------------------------
+class MyWebView(MDScreen):
+    pass
+
+#---------------------------------------------------------------------------------------------------------
 class UI(ScreenManager): #Clase para manejar diferentes pantallas
     pass
 
@@ -321,7 +473,7 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
         self.theme_cls.colors = colors
         self.theme_cls.theme_style = 'Dark' #Esto cambia el color del tema, o sea, del fondo que de forma predeterminada es blanco
         self.theme_cls.primary_palette = 'Blue' #Color principal de paleta
-        Builder.load_file('consejero_emo.kv') #Conexión con el archivo de interfaz .kv
+        Builder.load_file('prueba_web.kv') #Conexión con el archivo de interfaz .kv
         return UI() 
     
     
@@ -492,38 +644,263 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
         # self.root.ids.videos_emo.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
         
         if puntaje_emo == 10:
-            return #interfaz correspondiente
+            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            self.root.ids.mensaje_emocionales.text = 'Se podría decir que posees una buena inteligencia emocional, ¡felicitaciones!, pero igualmente debes continuar trabajando en ello, por lo que aquí te guiaremos a mejorar cada día más.'
+            self.root.ids.mensaje_boton_emocionales1.text = 'Conoce consejos\ny buenos hábitos\npara mantener el\nbuen manejo\nemocional'
         elif puntaje_emo == 8 or puntaje_emo == 6:
-            return #interfaz correspondiente
+            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            self.root.ids.mensaje_emocionales.text = 'Puede que te parezca difícil esto del manejo emocional y la inteligencia emocional, pero trabajarlo lleva a un gran bienestar, por lo que te guiaremos para dar con la mejor versión de ti.'
+            self.root.ids.mensaje_boton_emocionales1.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
+            self.root.ids.mensaje_boton_emocionales2.text = 'Dale un vistazo a\nestas lecturas y\nejercicios, para\ncomprender y\nmanejar tus\nemociones '
         elif puntaje_emo <=4:
-            return #interfaz correspondiente
-        
+            self.root.ids.mensaje_emocionales.text = 'Puede que estés pasando un momento difícil, o que no sepas bien cómo manejar tus emociones y reacciones, por lo que aquí tienes material de ayuda que puede llegar a serte útil.'
+            self.root.ids.mensaje_boton_emocionales1.text = 'Identifica tus\nsentimientos y\nproblemas con\nestos videos'
+            self.root.ids.mensaje_boton_emocionales2.text = 'Infórmate de los\ndiagnósticos e\ninformación de\nprofesionales'
+
         if puntaje_actividad == 10:
-            return #interfaz correspondiente
+            self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
+            self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
+            self.root.ids.mensaje_actividad.text = 'Excelente, según tus respuestas del test, eres una persona muy organizada, por lo que no necesitas mayor ayuda, solo en la tarea de continuar con los buenos hábitos.'
+            self.root.ids.mensaje_boton_actividad1.text = '¡Descubre nuevos\no mejores hábitos\npara mejorar tu\norganización!'
         elif puntaje_actividad == 8 or puntaje_actividad == 6:
-            return #interfaz correspondiente
+            self.root.ids.mensaje_actividad.text = 'Tu organización no es la mejor, pero solo necesitas orientación y algunos cuantos consejos y hábitos adaptables a tus rutinas, con lo que mejorarás considerablemente.'
+            self.root.ids.mensaje_boton_actividad1.text = '¡Descubre nuevos\no mejores hábitos\npara mejorar tu\norganización!'
+            self.root.ids.mensaje_boton_actividad2.text = 'Infórmate sobre\nestrategias y\nejercicios útiles'
         elif puntaje_actividad <=4:
-            return #interfaz correspondiente
-        
+            self.root.ids.mensaje_actividad.text = 'Necesitas modificar drásticamente tus hábitos organizativos y las malas prácticas como la procrastinación, pero tranquilo, te ayudaremos con el material seleccionado para ti.'
+            self.root.ids.mensaje_boton_actividad1.text = 'Aprende e\nimplementa\nhábitos y\nprácticas de estos\nvideos'
+            self.root.ids.mensaje_boton_actividad2.text = 'Infórmate sobre\nestrategias y\nejercicios útiles'
+
+
         if puntaje_generales == 10:
-            return #interfaz correspondiente
+            self.root.ids.mensaje_generales.text = 'Según tus resultados en el test, esta semana no ha sido muy dura para ti, sin embargo, ¡te recomendamos ver el material selecionado, para que tengas un momento de relajación!'
+            self.root.ids.mensaje_boton_generales1.text = 'Tomate un\nmomento para\nrelajarte con\nestos videos'
+            self.root.ids.mensaje_boton_generales2.text = 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
         elif puntaje_generales == 8 or puntaje_generales == 6:
-            return #interfaz correspondiente
+            self.root.ids.mensaje_generales.text = 'Según tus resultados en el test, has tenido una semana más o menos pesada, por lo que deberías tomarte un tiempo para relajarte con los videos y ejercicios que tenemos para ti.'
+            self.root.ids.mensaje_boton_generales1.text = 'Tomate un\nmomento para\nrelajarte con\nestos videos'
+            self.root.ids.mensaje_boton_generales2.text = 'Mira más tecnicas\ny ejercicios de\nrelajación aquí'
         elif puntaje_generales <=4:
-            return #interfaz correspondiente
-        
+            self.root.ids.mensaje_generales.text = 'Según tus resultados en el test, esta no ha sido de tus mejores semanas, por lo que aquí podrás encontrar un espacio donde descargarte y encontrar como manejar el estrés en situaciones así.'
+            self.root.ids.mensaje_boton_generales1.text = 'Tomate un\nmomento para\nrelajarte con\nestos videos'
+            self.root.ids.mensaje_boton_generales2.text = 'Mira cómo\nmanejar el estrés\ny técnicas de\nrelajación'
+
+
         if puntaje_plazo == 10:
-            return #interfaz correspondiente
+            self.root.ids.mensaje_futuro.text = 'Parece que tienes bien pensado lo que quieres para ti en un futuro, ¡así que es hora de pasar a la acción y empezar a encaminar eso que quieres!'
+            self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
+            self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
+            self.root.ids.mensaje_boton_futuro1.text = '¡Descubre como\nencaminar y\nlograr lo que ya te\nhas propuesto!'
         elif puntaje_plazo == 8 or puntaje_plazo == 6:
-            return #interfaz correspondiente
+            self.root.ids.mensaje_futuro.text = 'Parece que aún no tienes bien pensado lo que quieres para ti en un futuro, por lo que es necesario enfocar lo que realmente quieres y necesitas, para luego ponerlo en acción.'
+            self.root.ids.mensaje_boton_futuro1.text = 'Busca ayuda\nacerca de cómo\nbuscar y enfocar\nlo que realmente\nquieres'
+            self.root.ids.mensaje_boton_futuro2.text = 'Infórmate sobre\nestrategias útiles '
         elif puntaje_plazo <=4:
-            return #interfaz correspondiente
+            self.root.ids.mensaje_futuro.text = 'Quizá no tienes mucha idea de lo que te depara el futuro, por eso es necesario que estés preparado, y tengas un plan de acción de que es lo que quieres y necesitas.'
+            self.root.ids.mensaje_boton_futuro1.text = 'Encuentra que te\nllama la atención\npara tu futuro, y\nque es lo que\nnecesitas '
+            self.root.ids.mensaje_boton_futuro2.text = 'Descubre hábitos\norganizativos que\nte permitan ordenar\nlo que quieres y\nnecesitas'
         
         if puntaje_sociales == 10:
-            return #interfaz correspondiente
-        elif puntaje_sociales == 8 or puntaje_sociales == 6:
-            return #interfaz correspondiente
-        elif puntaje_sociales <=4:
-            return #interfaz correspondiente
+            self.root.ids.inter_sociales.remove_widget(self.root.ids.inter_sociales.children[0])
+            self.root.ids.mensaje_sociales.text = 'Quizá no tengas las mejores capacidades sociales, pero esto es solo cuestión de práctica y voluntad, y con la guía de los videos y ejercicios que hemos recopilado, ¡podrás mejorar rápidamente!'
+            self.root.ids.mensaje_boton_sociales1.text = 'Socializa y\nmaneja tus\nrelaciones mejor\ncon esta serie de\nconsejos '
+            self.root.ids.mensaje_boton_sociales2.text = 'Infórmate acerca\nde técnicas y\nconsejos que\npueden ser útiles'
+        elif puntaje_sociales <= 8:
+            self.root.ids.mensaje_sociales.text = 'Puede que para ti, expresarte y relacionarte sea un tema muy complicado, por lo que aquí tienes material de ayuda que puede llegar a serte útil.'
+            self.root.ids.mensaje_boton_sociales1.text = 'Identifica tus\ndificultades y\nproblemas con\nestos videos'
+            self.root.ids.mensaje_boton_sociales2.text = 'Infórmate de los\ndiagnósticos e\ninformación de\nprofesionales'
+
+
+
+    #--------------------------------------------------------------------------------------------------------
+    #---------------------------------------Metodos de webview-----------------------------------------------
+    #--------------------------------------------------------------------------------------------------------
+    def define_videos(self, tipo):
+        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales, pantalla
+        if puntaje_emo == 10 and tipo == 'emocional':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8ae8OJcPOA5GonkeJ--gZtqk",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_emo == 8 or puntaje_emo == 6) and tipo == 'emocional':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8af99jYrwLxWS5NFyiU7iNNS",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_emo <=4 and tipo == 'emocional':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8adQP0H7pXaOkvcmKowMANTD",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+        if puntaje_actividad == 10 and tipo == 'actividad':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acPVctqsFIhLpUJNCqvtmxU",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_actividad == 8 or puntaje_actividad == 6) and tipo == 'actividad':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acBWK0AwK6VMkecxR_VoUhB",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_actividad <=4 and tipo == 'actividad':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8afM2ecqFcmn5sWdg_dqNEZE",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+
+        if puntaje_generales == 10 and tipo == 'general':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8ad5mlQvnGOG1p_oZO3rejGE",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_generales == 8 or puntaje_generales == 6) and tipo == 'general':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8ad5mlQvnGOG1p_oZO3rejGE",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_generales <=4 and tipo == 'general':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acsKQg2mIUOAvYUZTysZnQL",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+        if puntaje_plazo == 10 and tipo == 'futuro':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acgTnaJzA-JNZ-zX4Zw-4Ab",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_plazo == 8 or puntaje_plazo == 6) and tipo == 'futuro':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acqRCYX3PWgc6uSUSAdunjY",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_plazo <=4 and tipo == 'futuro':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8af7ShRlg0LCarwgm7QTmNqb",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+        if puntaje_sociales == 10 and tipo == 'social':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8afJCxXCTjfctQfw6lCTL4nF",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_sociales <= 8 and tipo == 'social':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8af0ZpKTLkW3g3k8AT29YxRx",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+    def define_ejercicios(self, tipo):
+        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales, pantalla
+        if puntaje_emo == 10 and tipo == 'emocional':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8ae8OJcPOA5GonkeJ--gZtqk",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_emo == 8 or puntaje_emo == 6) and tipo == 'emocional':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8af99jYrwLxWS5NFyiU7iNNS",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_emo <=4 and tipo == 'emocional':
+            pantalla = WebView("https://justpaste.it/7yo6s",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+        if puntaje_actividad == 10 and tipo == 'actividad':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acPVctqsFIhLpUJNCqvtmxU",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_actividad == 8 or puntaje_actividad == 6) and tipo == 'actividad':
+            pantalla = WebView("https://justpaste.it/5k9t2",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_actividad <=4 and tipo == 'actividad':
+            pantalla = WebView("https://justpaste.it/3yk5b",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+
+        if puntaje_generales == 10 and tipo == 'general':
+            pantalla = WebView("https://justpaste.it/76rg8",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_generales == 8 or puntaje_generales == 6) and tipo == 'general':
+            pantalla = WebView("https://justpaste.it/76rg8",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_generales <=4 and tipo == 'general':
+            pantalla = WebView("https://justpaste.it/4y9a8",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+        if puntaje_plazo == 10 and tipo == 'futuro':
+            pantalla = WebView("https://www.youtube.com/playlist?list=PLH9n8q8hK8acgTnaJzA-JNZ-zX4Zw-4Ab",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif (puntaje_plazo == 8 or puntaje_plazo == 6) and tipo == 'futuro':
+            pantalla = WebView("https://justpaste.it/9amyl",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_plazo <=4 and tipo == 'futuro':
+            pantalla = WebView("https://justpaste.it/96t96",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+        if puntaje_sociales == 10 and tipo == 'social':
+            pantalla = WebView("https://justpaste.it/8u8fb",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+        elif puntaje_sociales <= 8 and tipo == 'social':
+            pantalla = WebView("https://justpaste.it/9nq99",
+                                enable_javascript = True,
+                                enable_downloads = True,
+                                enable_zoom = True)
+            return pantalla
+
+
 
 TuConsejeroEmocional().run() #Ejecuto la app
