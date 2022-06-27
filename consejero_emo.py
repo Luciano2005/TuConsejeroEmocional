@@ -583,7 +583,7 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
     #---------------------------------------Finalizar encuesta---------------------------------------
     
     def finalizar(self, mensaje): #Restricción para que el usuario solo finalice el test cuando responda todas las preguntas
-        if 0 is puntaje_emo or 0 is puntaje_plazo or 0 is puntaje_sociales or 0 is puntaje_actividad or 0 is puntaje_generales:
+        if 0 == puntaje_emo or 0 == puntaje_plazo or 0 == puntaje_sociales or 0 == puntaje_actividad or 0 == puntaje_generales:
             # print('Le falto responder una pregunta')
             return False
         else:
@@ -636,33 +636,51 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
     #----------Funciones de personalización de interfazces------------------------------------
 
     def personalizacion_contenido(self):
-        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales
-
+        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales, parte1_emo, parte2_emo, parte3_emo, bandera_emo
+        bandera = 0
         # self.root.ids.puntaje_medio_emo.remove_widget(self.root.ids.puntaje_medio_emo.children[0])
         # self.root.ids.articulos_emo.text = 'Dale un vistazo a\nestas lecturas y\nejercicios para\ncomprender y\nmanejar tus\nemociones '
         # self.root.ids.videos_emo.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
         
         if puntaje_emo == 10:
+             
+            parte3_emo = self.root.ids.inter_emocionales.children[0]
             self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            parte2_emo = self.root.ids.inter_emocionales.children[0]
             self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            parte1_emo = self.root.ids.inter_emocionales.children[0]
             self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
             self.root.ids.mensaje_emocionales.text = 'Se podría decir que posees una buena inteligencia emocional, ¡felicitaciones!, pero igualmente debes continuar trabajando en ello, por lo que aquí te guiaremos a mejorar cada día más.'
             self.root.ids.mensaje_boton_emocionales1.text = 'Conoce consejos\ny buenos hábitos\npara mantener el\nbuen manejo\nemocional'
+            self.root.ids.grid_emocional.row_default_height = 500
+            bandera_emo = 1
         elif puntaje_emo == 8 or puntaje_emo == 6:
             self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
             self.root.ids.mensaje_emocionales.text = 'Puede que te parezca difícil esto del manejo emocional y la inteligencia emocional, pero trabajarlo lleva a un gran bienestar, por lo que te guiaremos para dar con la mejor versión de ti.'
             self.root.ids.mensaje_boton_emocionales1.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
             self.root.ids.mensaje_boton_emocionales2.text = 'Dale un vistazo a\nestas lecturas y\nejercicios, para\ncomprender y\nmanejar tus\nemociones '
+            self.root.ids.grid_emocional.row_default_height = 650
+            bandera_emo = 2
         elif puntaje_emo <=4:
+            if bandera_emo == 1:
+                self.root.ids.inter_emocionales.add_widget(parte1_emo)
+                self.root.ids.inter_emocionales.add_widget(parte2_emo)
+                self.root.ids.inter_emocionales.add_widget(parte3_emo)
+            elif bandera_emo == 2:
+                pass
+            
             self.root.ids.mensaje_emocionales.text = 'Puede que estés pasando un momento difícil, o que no sepas bien cómo manejar tus emociones y reacciones, por lo que aquí tienes material de ayuda que puede llegar a serte útil.'
             self.root.ids.mensaje_boton_emocionales1.text = 'Identifica tus\nsentimientos y\nproblemas con\nestos videos'
             self.root.ids.mensaje_boton_emocionales2.text = 'Infórmate de los\ndiagnósticos e\ninformación de\nprofesionales'
+            self.root.ids.grid_emocional.row_default_height = 800
+            bandera_emo = 3
 
         if puntaje_actividad == 10:
             self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
             self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
             self.root.ids.mensaje_actividad.text = 'Excelente, según tus respuestas del test, eres una persona muy organizada, por lo que no necesitas mayor ayuda, solo en la tarea de continuar con los buenos hábitos.'
             self.root.ids.mensaje_boton_actividad1.text = '¡Descubre nuevos\no mejores hábitos\npara mejorar tu\norganización!'
+            self.root.ids.grid_actividad.row_default_height = 400
         elif puntaje_actividad == 8 or puntaje_actividad == 6:
             self.root.ids.mensaje_actividad.text = 'Tu organización no es la mejor, pero solo necesitas orientación y algunos cuantos consejos y hábitos adaptables a tus rutinas, con lo que mejorarás considerablemente.'
             self.root.ids.mensaje_boton_actividad1.text = '¡Descubre nuevos\no mejores hábitos\npara mejorar tu\norganización!'
@@ -692,20 +710,24 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
             self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
             self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
             self.root.ids.mensaje_boton_futuro1.text = '¡Descubre como\nencaminar y\nlograr lo que ya te\nhas propuesto!'
+            self.root.ids.grid_futuro.row_default_height = 400
         elif puntaje_plazo == 8 or puntaje_plazo == 6:
             self.root.ids.mensaje_futuro.text = 'Parece que aún no tienes bien pensado lo que quieres para ti en un futuro, por lo que es necesario enfocar lo que realmente quieres y necesitas, para luego ponerlo en acción.'
             self.root.ids.mensaje_boton_futuro1.text = 'Busca ayuda\nacerca de cómo\nbuscar y enfocar\nlo que realmente\nquieres'
             self.root.ids.mensaje_boton_futuro2.text = 'Infórmate sobre\nestrategias útiles '
+            self.root.ids.grid_futuro.row_default_height = 600
         elif puntaje_plazo <=4:
             self.root.ids.mensaje_futuro.text = 'Quizá no tienes mucha idea de lo que te depara el futuro, por eso es necesario que estés preparado, y tengas un plan de acción de que es lo que quieres y necesitas.'
             self.root.ids.mensaje_boton_futuro1.text = 'Encuentra que te\nllama la atención\npara tu futuro, y\nque es lo que\nnecesitas '
             self.root.ids.mensaje_boton_futuro2.text = 'Descubre hábitos\norganizativos que\nte permitan ordenar\nlo que quieres y\nnecesitas'
-        
+            self.root.ids.grid_futuro.row_default_height = 615
+
         if puntaje_sociales == 10:
             self.root.ids.inter_sociales.remove_widget(self.root.ids.inter_sociales.children[0])
             self.root.ids.mensaje_sociales.text = 'Quizá no tengas las mejores capacidades sociales, pero esto es solo cuestión de práctica y voluntad, y con la guía de los videos y ejercicios que hemos recopilado, ¡podrás mejorar rápidamente!'
             self.root.ids.mensaje_boton_sociales1.text = 'Socializa y\nmaneja tus\nrelaciones mejor\ncon esta serie de\nconsejos '
             self.root.ids.mensaje_boton_sociales2.text = 'Infórmate acerca\nde técnicas y\nconsejos que\npueden ser útiles'
+            self.root.ids.grid_social.row_default_height = 750
         elif puntaje_sociales <= 8:
             self.root.ids.mensaje_sociales.text = 'Puede que para ti, expresarte y relacionarte sea un tema muy complicado, por lo que aquí tienes material de ayuda que puede llegar a serte útil.'
             self.root.ids.mensaje_boton_sociales1.text = 'Identifica tus\ndificultades y\nproblemas con\nestos videos'
