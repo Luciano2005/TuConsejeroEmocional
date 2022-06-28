@@ -7,19 +7,20 @@ from kivy.uix.screenmanager import ScreenManager, FallOutTransition, SlideTransi
 from kivy.uix.scrollview import ScrollView #Vista Scroll
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
+from kivy.uix.checkbox import CheckBox
 #------------------------------------Cosas de webview---------------------------------------------------------
 from kivy.uix.modalview import ModalView
 from kivy.clock import Clock
-# from android.runnable import run_on_ui_thread #Descomentar
-# from jnius import autoclass, cast, PythonJavaClass, java_method #Descomentar
-# from webview import WebView #Descomentar
+from android.runnable import run_on_ui_thread #Descomentar
+from jnius import autoclass, cast, PythonJavaClass, java_method #Descomentar
+from webview import WebView #Descomentar
 from kivy.uix.widget import Widget
 from kivymd.uix.screen import MDScreen
 
 
 
 
-Window.size = (300, 600) #Tamaño de pantalla
+#Window.size = (300, 600) #Tamaño de pantalla
 
 #--------------------------------------------------------------------------------
 #                       Algoritmo de las preguntas
@@ -33,6 +34,10 @@ puntaje_actividad = 0
 puntaje_generales = 0
 
 aparicion = 0
+bandera_emo = 0 #Cambio de interfaces
+bandera_social = 0
+bandera_plazo = 0
+bandera_actividad = 0
 
 #Funciones de asignación de puntos
 def puntos_emo(valor):  #Asignación de puntos para las preguntas emocionales
@@ -250,141 +255,141 @@ preguntas = [[[random.choice(list(preguntas_emocionales.values()))], list(respue
 
 
 #-----------------------------------------------------------------------------------------------------
-#                                   Codigo pjnius para el webview (RECORDAR DESCOMENTAR)
+#                                   Codigo pyjnius para el webview (RECORDAR DESCOMENTAR)
 #-----------------------------------------------------------------------------------------------------
 
-# WebViewA = autoclass('android.webkit.WebView')
-# WebViewClient = autoclass('android.webkit.WebViewClient')
-# LayoutParams = autoclass('android.view.ViewGroup$LayoutParams')
-# LinearLayout = autoclass('android.widget.LinearLayout')
-# KeyEvent = autoclass('android.view.KeyEvent')
-# ViewGroup = autoclass('android.view.ViewGroup')
-# DownloadManager = autoclass('android.app.DownloadManager')
-# DownloadManagerRequest = autoclass('android.app.DownloadManager$Request')
-# Uri = autoclass('android.net.Uri')
-# Environment = autoclass('android.os.Environment')
-# Context = autoclass('android.content.Context')
-# PythonActivity = autoclass('org.kivy.android.PythonActivity')
+WebViewA = autoclass('android.webkit.WebView')
+WebViewClient = autoclass('android.webkit.WebViewClient')
+LayoutParams = autoclass('android.view.ViewGroup$LayoutParams')
+LinearLayout = autoclass('android.widget.LinearLayout')
+KeyEvent = autoclass('android.view.KeyEvent')
+ViewGroup = autoclass('android.view.ViewGroup')
+DownloadManager = autoclass('android.app.DownloadManager')
+DownloadManagerRequest = autoclass('android.app.DownloadManager$Request')
+Uri = autoclass('android.net.Uri')
+Environment = autoclass('android.os.Environment')
+Context = autoclass('android.content.Context')
+PythonActivity = autoclass('org.kivy.android.PythonActivity')
 
 
-# class DownloadListener(PythonJavaClass):
-#     #https://stackoverflow.com/questions/10069050/download-file-inside-webview
-#     __javacontext__ = 'app'
-#     __javainterfaces__ = ['android/webkit/DownloadListener']
+class DownloadListener(PythonJavaClass):
+    #https://stackoverflow.com/questions/10069050/download-file-inside-webview
+    __javacontext__ = 'app'
+    __javainterfaces__ = ['android/webkit/DownloadListener']
 
-#     @java_method('(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V')
-#     def onDownloadStart(self, url, userAgent, contentDisposition, mimetype,
-#                         contentLength):
-#         mActivity = PythonActivity.mActivity 
-#         context =  mActivity.getApplicationContext()
-#         visibility = DownloadManagerRequest.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-#         dir_type = Environment.DIRECTORY_DOWNLOADS
-#         uri = Uri.parse(url)
-#         filepath = uri.getLastPathSegment()
-#         request = DownloadManagerRequest(uri)
-#         request.setNotificationVisibility(visibility)
-#         request.setDestinationInExternalFilesDir(context,dir_type, filepath)
-#         dm = cast(DownloadManager,
-#                   mActivity.getSystemService(Context.DOWNLOAD_SERVICE))
-#         dm.enqueue(request)
+    @java_method('(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V')
+    def onDownloadStart(self, url, userAgent, contentDisposition, mimetype,
+                        contentLength):
+        mActivity = PythonActivity.mActivity 
+        context =  mActivity.getApplicationContext()
+        visibility = DownloadManagerRequest.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+        dir_type = Environment.DIRECTORY_DOWNLOADS
+        uri = Uri.parse(url)
+        filepath = uri.getLastPathSegment()
+        request = DownloadManagerRequest(uri)
+        request.setNotificationVisibility(visibility)
+        request.setDestinationInExternalFilesDir(context,dir_type, filepath)
+        dm = cast(DownloadManager,
+                  mActivity.getSystemService(Context.DOWNLOAD_SERVICE))
+        dm.enqueue(request)
 
 
-# class KeyListener(PythonJavaClass):
-#     __javacontext__ = 'app'
-#     __javainterfaces__ = ['android/view/View$OnKeyListener']
+class KeyListener(PythonJavaClass):
+    __javacontext__ = 'app'
+    __javainterfaces__ = ['android/view/View$OnKeyListener']
 
-#     def __init__(self, listener):
-#         super().__init__()
-#         self.listener = listener
+    def __init__(self, listener):
+        super().__init__()
+        self.listener = listener
 
-#     @java_method('(Landroid/view/View;ILandroid/view/KeyEvent;)Z')
-#     def onKey(self, v, key_code, event):
-#         if event.getAction() == KeyEvent.ACTION_DOWN and\
-#            key_code == KeyEvent.KEYCODE_BACK: 
-#             return self.listener()
+    @java_method('(Landroid/view/View;ILandroid/view/KeyEvent;)Z')
+    def onKey(self, v, key_code, event):
+        if event.getAction() == KeyEvent.ACTION_DOWN and\
+           key_code == KeyEvent.KEYCODE_BACK: 
+            return self.listener()
         
-# class WebView(ModalView):
-#     # https://developer.android.com/reference/android/webkit/WebView
+class WebView(ModalView):
+    # https://developer.android.com/reference/android/webkit/WebView
     
-#     def __init__(self, url, enable_javascript = False, enable_downloads = False,
-#                  enable_zoom = False, **kwargs):
-#         super().__init__(**kwargs)
-#         self.url = url
-#         self.enable_javascript = enable_javascript
-#         self.enable_downloads = enable_downloads
-#         self.enable_zoom = enable_zoom
-#         self.webview = None
-#         self.enable_dismiss = True
-#         self.open()
+    def __init__(self, url, enable_javascript = False, enable_downloads = False,
+                 enable_zoom = False, **kwargs):
+        super().__init__(**kwargs)
+        self.url = url
+        self.enable_javascript = enable_javascript
+        self.enable_downloads = enable_downloads
+        self.enable_zoom = enable_zoom
+        self.webview = None
+        self.enable_dismiss = True
+        self.open()
 
-#     @run_on_ui_thread        
-#     def on_open(self):
-#         mActivity = PythonActivity.mActivity 
-#         webview = WebViewA(mActivity)
-#         webview.setWebViewClient(WebViewClient())
-#         webview.getSettings().setJavaScriptEnabled(self.enable_javascript)
-#         webview.getSettings().setBuiltInZoomControls(self.enable_zoom)
-#         webview.getSettings().setDisplayZoomControls(False)
-#         webview.getSettings().setAllowFileAccess(True) #default False api>29
-#         layout = LinearLayout(mActivity)
-#         layout.setOrientation(LinearLayout.VERTICAL)
-#         layout.addView(webview, self.width, self.height)
-#         mActivity.addContentView(layout, LayoutParams(-1, -1))
-#         webview.setOnKeyListener(KeyListener(self._back_pressed))
-#         if self.enable_downloads:
-#             webview.setDownloadListener(DownloadListener())
-#         self.webview = webview
-#         self.layout = layout
-#         try:
-#             webview.loadUrl(self.url)
-#         except Exception as e:            
-#             print('Webview.on_open(): ' + str(e))
-#             self.dismiss()  
+    @run_on_ui_thread        
+    def on_open(self):
+        mActivity = PythonActivity.mActivity 
+        webview = WebViewA(mActivity)
+        webview.setWebViewClient(WebViewClient())
+        webview.getSettings().setJavaScriptEnabled(self.enable_javascript)
+        webview.getSettings().setBuiltInZoomControls(self.enable_zoom)
+        webview.getSettings().setDisplayZoomControls(False)
+        webview.getSettings().setAllowFileAccess(True) #default False api>29
+        layout = LinearLayout(mActivity)
+        layout.setOrientation(LinearLayout.VERTICAL)
+        layout.addView(webview, self.width, self.height)
+        mActivity.addContentView(layout, LayoutParams(-1, -1))
+        webview.setOnKeyListener(KeyListener(self._back_pressed))
+        if self.enable_downloads:
+            webview.setDownloadListener(DownloadListener())
+        self.webview = webview
+        self.layout = layout
+        try:
+            webview.loadUrl(self.url)
+        except Exception as e:            
+            print('Webview.on_open(): ' + str(e))
+            self.dismiss()  
         
-#     @run_on_ui_thread        
-#     def on_dismiss(self):
-#         if self.enable_dismiss:
-#             self.enable_dismiss = False
-#             parent = cast(ViewGroup, self.layout.getParent())
-#             if parent is not None: parent.removeView(self.layout)
-#             self.webview.clearHistory()
-#             self.webview.clearCache(True)
-#             self.webview.clearFormData()
-#             self.webview.destroy()
-#             self.layout = None
-#             self.webview = None
+    @run_on_ui_thread        
+    def on_dismiss(self):
+        if self.enable_dismiss:
+            self.enable_dismiss = False
+            parent = cast(ViewGroup, self.layout.getParent())
+            if parent is not None: parent.removeView(self.layout)
+            self.webview.clearHistory()
+            self.webview.clearCache(True)
+            self.webview.clearFormData()
+            self.webview.destroy()
+            self.layout = None
+            self.webview = None
         
-#     @run_on_ui_thread
-#     def on_size(self, instance, size):
-#         if self.webview:
-#             params = self.webview.getLayoutParams()
-#             params.width = self.width
-#             params.height = self.height
-#             self.webview.setLayoutParams(params)
+    @run_on_ui_thread
+    def on_size(self, instance, size):
+        if self.webview:
+            params = self.webview.getLayoutParams()
+            params.width = self.width
+            params.height = self.height
+            self.webview.setLayoutParams(params)
 
-#     def pause(self):
-#         if self.webview:
-#             self.webview.pauseTimers()
-#             self.webview.onPause()
+    def pause(self):
+        if self.webview:
+            self.webview.pauseTimers()
+            self.webview.onPause()
 
-#     def resume(self):
-#         if self.webview:
-#             self.webview.onResume()       
-#             self.webview.resumeTimers()
+    def resume(self):
+        if self.webview:
+            self.webview.onResume()       
+            self.webview.resumeTimers()
 
-#     def downloads_directory(self):
-#         # e.g. Android/data/org.test.myapp/files/Download
-#         dir_type = Environment.DIRECTORY_DOWNLOADS
-#         context =  PythonActivity.mActivity.getApplicationContext()
-#         directory = context.getExternalFilesDir(dir_type)
-#         return str(directory.getPath())
+    def downloads_directory(self):
+        # e.g. Android/data/org.test.myapp/files/Download
+        dir_type = Environment.DIRECTORY_DOWNLOADS
+        context =  PythonActivity.mActivity.getApplicationContext()
+        directory = context.getExternalFilesDir(dir_type)
+        return str(directory.getPath())
 
-#     def _back_pressed(self):
-#         if self.webview.canGoBack():
-#             self.webview.goBack()
-#         else:
-#             self.dismiss()  
-#         return True
+    def _back_pressed(self):
+        if self.webview.canGoBack():
+            self.webview.goBack()
+        else:
+            self.dismiss()  
+        return True
 
 
 
@@ -480,9 +485,25 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
     #--------------------------Mostrar preguntas y respuestas en pantalla-------------------------------------------
         
     def preguntas_definicion(self): #Función que pone las preguntas y respuestas antes definidas
+        for child in reversed(self.root.ids.grid_pregunta1.children):
+            if isinstance(child, CheckBox):
+                child.active = False
+        for child in reversed(self.root.ids.grid_pregunta2.children):
+            if isinstance(child, CheckBox):
+                child.active = False
+        for child in reversed(self.root.ids.grid_pregunta3.children):
+            if isinstance(child, CheckBox):
+                child.active = False
+        for child in reversed(self.root.ids.grid_pregunta4.children):
+            if isinstance(child, CheckBox):
+                child.active = False
+        for child in reversed(self.root.ids.grid_pregunta5.children):
+            if isinstance(child, CheckBox):
+                child.active = False
         asigna_pregunta = 0
-        contador_tipo = 0
+        #contador_tipo = 0
         posicion = 0
+        
 
         for i in range(5): #Este bucle representa el número de preguntas a mostrar (5)
             for j in preguntas[i][0]: #Este bucle representa las preguntas
@@ -636,39 +657,50 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
     #----------Funciones de personalización de interfazces------------------------------------
 
     def personalizacion_contenido(self):
-        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales, parte1_emo, parte2_emo, parte3_emo, bandera_emo
-        bandera = 0
+        global puntaje_emo, puntaje_actividad, puntaje_generales, puntaje_plazo, puntaje_sociales, parte1_emo, parte2_emo, parte3_emo, bandera_emo, bandera_social, parte3_social, parte1_plazo, parte2_plazo, bandera_plazo, parte1_actividad, parte2_actividad, bandera_actividad
+        
         # self.root.ids.puntaje_medio_emo.remove_widget(self.root.ids.puntaje_medio_emo.children[0])
         # self.root.ids.articulos_emo.text = 'Dale un vistazo a\nestas lecturas y\nejercicios para\ncomprender y\nmanejar tus\nemociones '
         # self.root.ids.videos_emo.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
         
         if puntaje_emo == 10:
-             
-            parte3_emo = self.root.ids.inter_emocionales.children[0]
-            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
-            parte2_emo = self.root.ids.inter_emocionales.children[0]
-            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
-            parte1_emo = self.root.ids.inter_emocionales.children[0]
-            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            if bandera_emo == 0 or bandera_emo == 3:
+                parte3_emo = self.root.ids.inter_emocionales.children[0]
+                self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+                parte2_emo = self.root.ids.inter_emocionales.children[0]
+                self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+                parte1_emo = self.root.ids.inter_emocionales.children[0]
+                self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            elif bandera_emo == 2:
+                parte2_emo = self.root.ids.inter_emocionales.children[0]
+                self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+                parte1_emo = self.root.ids.inter_emocionales.children[0]
+                self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
             self.root.ids.mensaje_emocionales.text = 'Se podría decir que posees una buena inteligencia emocional, ¡felicitaciones!, pero igualmente debes continuar trabajando en ello, por lo que aquí te guiaremos a mejorar cada día más.'
             self.root.ids.mensaje_boton_emocionales1.text = 'Conoce consejos\ny buenos hábitos\npara mantener el\nbuen manejo\nemocional'
             self.root.ids.grid_emocional.row_default_height = 500
             bandera_emo = 1
+
         elif puntaje_emo == 8 or puntaje_emo == 6:
-            self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            if bandera_emo == 0 or bandera_emo == 3:
+                parte3_emo = self.root.ids.inter_emocionales.children[0]
+                self.root.ids.inter_emocionales.remove_widget(self.root.ids.inter_emocionales.children[0])
+            elif bandera_emo == 1:
+                self.root.ids.inter_emocionales.add_widget(parte1_emo)
+                self.root.ids.inter_emocionales.add_widget(parte2_emo)
             self.root.ids.mensaje_emocionales.text = 'Puede que te parezca difícil esto del manejo emocional y la inteligencia emocional, pero trabajarlo lleva a un gran bienestar, por lo que te guiaremos para dar con la mejor versión de ti.'
             self.root.ids.mensaje_boton_emocionales1.text = 'Consulta\nconsejos y\nbuenos hábitos\nemocionales con\nestos videos'
             self.root.ids.mensaje_boton_emocionales2.text = 'Dale un vistazo a\nestas lecturas y\nejercicios, para\ncomprender y\nmanejar tus\nemociones '
             self.root.ids.grid_emocional.row_default_height = 650
             bandera_emo = 2
+
         elif puntaje_emo <=4:
             if bandera_emo == 1:
                 self.root.ids.inter_emocionales.add_widget(parte1_emo)
                 self.root.ids.inter_emocionales.add_widget(parte2_emo)
                 self.root.ids.inter_emocionales.add_widget(parte3_emo)
             elif bandera_emo == 2:
-                pass
-            
+                self.root.ids.inter_emocionales.add_widget(parte3_emo)
             self.root.ids.mensaje_emocionales.text = 'Puede que estés pasando un momento difícil, o que no sepas bien cómo manejar tus emociones y reacciones, por lo que aquí tienes material de ayuda que puede llegar a serte útil.'
             self.root.ids.mensaje_boton_emocionales1.text = 'Identifica tus\nsentimientos y\nproblemas con\nestos videos'
             self.root.ids.mensaje_boton_emocionales2.text = 'Infórmate de los\ndiagnósticos e\ninformación de\nprofesionales'
@@ -676,20 +708,36 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
             bandera_emo = 3
 
         if puntaje_actividad == 10:
-            self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
-            self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
+            if bandera_actividad == 0 or bandera_actividad == 2 or bandera_actividad == 3:
+                parte2_actividad = self.root.ids.inter_actividad.children[0]
+                self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
+                parte1_actividad = self.root.ids.inter_actividad.children[0]
+                self.root.ids.inter_actividad.remove_widget(self.root.ids.inter_actividad.children[0])
+
             self.root.ids.mensaje_actividad.text = 'Excelente, según tus respuestas del test, eres una persona muy organizada, por lo que no necesitas mayor ayuda, solo en la tarea de continuar con los buenos hábitos.'
             self.root.ids.mensaje_boton_actividad1.text = '¡Descubre nuevos\no mejores hábitos\npara mejorar tu\norganización!'
             self.root.ids.grid_actividad.row_default_height = 400
+            bandera_actividad = 1
         elif puntaje_actividad == 8 or puntaje_actividad == 6:
+            if bandera_actividad == 1:
+                self.root.ids.inter_actividad.add_widget(parte1_actividad)
+                self.root.ids.inter_actividad.add_widget(parte2_actividad)
+
             self.root.ids.mensaje_actividad.text = 'Tu organización no es la mejor, pero solo necesitas orientación y algunos cuantos consejos y hábitos adaptables a tus rutinas, con lo que mejorarás considerablemente.'
             self.root.ids.mensaje_boton_actividad1.text = '¡Descubre nuevos\no mejores hábitos\npara mejorar tu\norganización!'
             self.root.ids.mensaje_boton_actividad2.text = 'Infórmate sobre\nestrategias y\nejercicios útiles'
+            self.root.ids.grid_actividad.row_default_height = 600
+            bandera_actividad = 2
         elif puntaje_actividad <=4:
+            if bandera_actividad == 1:
+                self.root.ids.inter_actividad.add_widget(parte1_actividad)
+                self.root.ids.inter_actividad.add_widget(parte2_actividad)
+
             self.root.ids.mensaje_actividad.text = 'Necesitas modificar drásticamente tus hábitos organizativos y las malas prácticas como la procrastinación, pero tranquilo, te ayudaremos con el material seleccionado para ti.'
             self.root.ids.mensaje_boton_actividad1.text = 'Aprende e\nimplementa\nhábitos y\nprácticas de estos\nvideos'
             self.root.ids.mensaje_boton_actividad2.text = 'Infórmate sobre\nestrategias y\nejercicios útiles'
-
+            self.root.ids.grid_actividad.row_default_height = 600
+            bandera_actividad = 3
 
         if puntaje_generales == 10:
             self.root.ids.mensaje_generales.text = 'Según tus resultados en el test, esta semana no ha sido muy dura para ti, sin embargo, ¡te recomendamos ver el material selecionado, para que tengas un momento de relajación!'
@@ -706,33 +754,51 @@ class TuConsejeroEmocional(MDApp): #Acá van los métodos o funciones de la APP
 
 
         if puntaje_plazo == 10:
-            self.root.ids.mensaje_futuro.text = 'Parece que tienes bien pensado lo que quieres para ti en un futuro, ¡así que es hora de pasar a la acción y empezar a encaminar eso que quieres!'
-            self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
-            self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
+            if bandera_plazo == 0 or bandera_plazo == 3 or bandera_plazo == 2:
+                parte2_plazo = self.root.ids.inter_futuro.children[0]
+                self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
+                parte1_plazo = self.root.ids.inter_futuro.children[0]
+                self.root.ids.inter_futuro.remove_widget(self.root.ids.inter_futuro.children[0])
+            self.root.ids.mensaje_futuro.text = 'Parece que tienes bien pensado lo que quieres para ti en un futuro, ¡así que es hora de pasar a la acción y empezar a encaminar eso que quieres!' 
             self.root.ids.mensaje_boton_futuro1.text = '¡Descubre como\nencaminar y\nlograr lo que ya te\nhas propuesto!'
             self.root.ids.grid_futuro.row_default_height = 400
+            bandera_plazo = 1
         elif puntaje_plazo == 8 or puntaje_plazo == 6:
+            if bandera_plazo == 1:
+                self.root.ids.inter_futuro.add_widget(parte1_plazo)
+                self.root.ids.inter_futuro.add_widget(parte2_plazo)
             self.root.ids.mensaje_futuro.text = 'Parece que aún no tienes bien pensado lo que quieres para ti en un futuro, por lo que es necesario enfocar lo que realmente quieres y necesitas, para luego ponerlo en acción.'
             self.root.ids.mensaje_boton_futuro1.text = 'Busca ayuda\nacerca de cómo\nbuscar y enfocar\nlo que realmente\nquieres'
             self.root.ids.mensaje_boton_futuro2.text = 'Infórmate sobre\nestrategias útiles '
             self.root.ids.grid_futuro.row_default_height = 600
+            bandera_plazo = 2
         elif puntaje_plazo <=4:
+            if bandera_plazo == 1:
+                self.root.ids.inter_futuro.add_widget(parte1_plazo)
+                self.root.ids.inter_futuro.add_widget(parte2_plazo)
             self.root.ids.mensaje_futuro.text = 'Quizá no tienes mucha idea de lo que te depara el futuro, por eso es necesario que estés preparado, y tengas un plan de acción de que es lo que quieres y necesitas.'
             self.root.ids.mensaje_boton_futuro1.text = 'Encuentra que te\nllama la atención\npara tu futuro, y\nque es lo que\nnecesitas '
             self.root.ids.mensaje_boton_futuro2.text = 'Descubre hábitos\norganizativos que\nte permitan ordenar\nlo que quieres y\nnecesitas'
             self.root.ids.grid_futuro.row_default_height = 615
+            bandera_plazo = 3
 
         if puntaje_sociales == 10:
-            self.root.ids.inter_sociales.remove_widget(self.root.ids.inter_sociales.children[0])
+            if bandera_social == 0 or bandera_social == 2:
+                parte3_social = self.root.ids.inter_sociales.children[0]
+                self.root.ids.inter_sociales.remove_widget(self.root.ids.inter_sociales.children[0])
             self.root.ids.mensaje_sociales.text = 'Quizá no tengas las mejores capacidades sociales, pero esto es solo cuestión de práctica y voluntad, y con la guía de los videos y ejercicios que hemos recopilado, ¡podrás mejorar rápidamente!'
             self.root.ids.mensaje_boton_sociales1.text = 'Socializa y\nmaneja tus\nrelaciones mejor\ncon esta serie de\nconsejos '
             self.root.ids.mensaje_boton_sociales2.text = 'Infórmate acerca\nde técnicas y\nconsejos que\npueden ser útiles'
             self.root.ids.grid_social.row_default_height = 750
+            bandera_social = 1
         elif puntaje_sociales <= 8:
+            if bandera_social == 1:
+                self.root.ids.inter_sociales.add_widget(parte3_social)
             self.root.ids.mensaje_sociales.text = 'Puede que para ti, expresarte y relacionarte sea un tema muy complicado, por lo que aquí tienes material de ayuda que puede llegar a serte útil.'
             self.root.ids.mensaje_boton_sociales1.text = 'Identifica tus\ndificultades y\nproblemas con\nestos videos'
             self.root.ids.mensaje_boton_sociales2.text = 'Infórmate de los\ndiagnósticos e\ninformación de\nprofesionales'
-
+            self.root.ids.grid_social.row_default_height = 800
+            bandera_social = 2
 
 
     #--------------------------------------------------------------------------------------------------------

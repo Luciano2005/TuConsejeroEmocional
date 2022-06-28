@@ -227,7 +227,7 @@
                 row: 5
                 cols_minimum: {0: 30, 1: 200}
                 size_hint: (None, .2)
-                
+                id: grid_pregunta1
                 # size_hint: (1, .3)
                 # col_force_default: True
                 # col_default_width: 100
@@ -287,6 +287,7 @@
             orientation: 'vertical'
             padding: 20
             spacing: 10
+            id: A
             MDLabel:
                 text:'Pregunta 2' 
                 # valign: 'top'
@@ -305,6 +306,7 @@
                 row: 5
                 cols_minimum: {0: 30, 1: 200}
                 size_hint: (None, .2)
+                id: grid_pregunta2
 
                 CheckBox:
                     group: 'R2'
@@ -344,8 +346,9 @@
             MDGridLayout:
                 cols: 2
                 # cols_minimum: {0: 175, 1: 175}
-                spacing: 110
-                size_hint: (1, .03)
+                spacing: root.width/5
+                size_hint: (root.width, .03)
+                
                 
                 MDFillRoundFlatIconButton:
                     icon: 'arrow-left-bold'
@@ -397,6 +400,7 @@
                 row: 5
                 cols_minimum: {0: 30, 1: 200}
                 size_hint: (None, .2)
+                id: grid_pregunta3
                 CheckBox:
                     group: 'R3'
                     on_active: app.enviar_resultado(self, self.active, pregunta3.text, respuesta1_3.text)
@@ -434,7 +438,7 @@
 
             MDGridLayout:
                 cols: 2
-                spacing: 110
+                spacing:  root.width/5
                 size_hint: (1, .03)
                 MDFillRoundFlatIconButton:
                     icon: 'arrow-left-bold'
@@ -487,6 +491,7 @@
                 row: 5
                 cols_minimum: {0: 30, 1: 200}
                 size_hint: (None, .2)
+                id: grid_pregunta4
                 CheckBox:
                     group: 'R4'
                     on_active: app.enviar_resultado(self, self.active, pregunta4.text, respuesta1_4.text)
@@ -524,7 +529,7 @@
 
             MDGridLayout:
                 cols: 2
-                spacing: 110
+                spacing: root.width/5
                 size_hint: (1, .03)
                 MDFillRoundFlatIconButton:
                     icon: 'arrow-left-bold'
@@ -576,6 +581,7 @@
                 row: 5
                 cols_minimum: {0: 30, 1: 200}
                 size_hint: (None, .2)
+                id: grid_pregunta5
 
                 CheckBox:
                     group: 'R5'
@@ -614,7 +620,7 @@
 
             MDGridLayout:
                 cols: 2
-                spacing: 110
+                spacing: root.width/5
                 size_hint: (1, .03)
                 MDFillRoundFlatIconButton:
                     icon: 'arrow-left-bold'
